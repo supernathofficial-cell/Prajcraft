@@ -31,10 +31,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     if (session) {
-        // Google OAuth Redirect Handling & DB Injection
-        if (window.location.pathname.endsWith('login.html')) {
+        // Google OAuth Redirect Handling & DB Injection (Handles if Supabase redirects to / or /login.html)
+        if (window.location.pathname.endsWith('login.html') || window.location.hash.includes('access_token')) {
             // Check if user already exists by email to prevent duplicates
-            const { data: userRow } = await window.supabase.from('users').select('id').eq('email', session.user.email).maybeSingle();
+            const { data: userRow } = await window.supabase.from('users').select('id').eq('id', session.user.id).maybeSingle();
             
             if (!userRow) {
                 // Create ONE new customer record
@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }]);
             }
             
-            // Intelligently redirect to previous page
+            // Intelligently redirect to previous page or profile, cleaning up the URL hash
             const returnUrl = sessionStorage.getItem('returnUrl') || 'profile.html';
             sessionStorage.removeItem('returnUrl');
             window.location.href = returnUrl;
